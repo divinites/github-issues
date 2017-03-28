@@ -1,15 +1,22 @@
+import re
 import sublime
 import sublime_plugin
+
+from . import CONTENT_END
+from . import HEADER_END
+from . import ISSUE_END
+from . import ISSUE_START
+from . import LINE_END
+from . import flag_container as fc
+from . import issue_obj_storage
+from . import log
+from . import repo_info_storage
+from . import settings
+from .libgit import github
 from .libgit import issue
 from .libgit import utils
-from .libgit import github
-from . import flag_container as fc
-from . import log, LINE_END, settings
-from . import repo_info_storage, issue_obj_storage
-import re
-from queue import Queue
 from functools import partial
-from . import ISSUE_START, ISSUE_END, HEADER_END, CONTENT_END
+from queue import Queue
 
 
 global active_issue_obj
@@ -53,6 +60,7 @@ class ChangeIssuePageCommand(sublime_plugin.TextCommand):
 
 
 class UpdateAndCloseOrReopenIssueCommand(sublime_plugin.WindowCommand):
+
     def is_enabled(self):
         self.view = self.window.active_view()
         if self.view.settings().get("issue_flag"):
@@ -167,9 +175,9 @@ class LoadRepoList:
             folder_list = sublime.active_window().folders()
             if folder_list:
                 for folder_path in folder_list:
-                        repo_info = github.get_github_repo_info(folder_path)
-                        if repo_info != (-1, -1):
-                            repo_list.append(repo_info)
+                    repo_info = github.get_github_repo_info(folder_path)
+                    if repo_info != (-1, -1):
+                        repo_list.append(repo_info)
             entries.extend(
                 ["{}/{}".format(repo[0], repo[1]) for repo in repo_list])
         self.entries = entries
@@ -247,9 +255,9 @@ class LoadRepoList:
 
 def create_new_issue_view():
     snippet = ''
-    snippet += "# Title         : " + LINE_END
-    snippet += "## Label        : " + LINE_END
-    snippet += "## Assignee     : " + LINE_END
+    snippet += "# Title         : " + LINE_END + LINE_END
+    snippet += "## Label        : " + LINE_END + LINE_END
+    snippet += "## Assignee     : " + LINE_END + LINE_END
     snippet += HEADER_END() + LINE_END
     snippet += ISSUE_START() + LINE_END
     snippet += LINE_END
@@ -281,4 +289,3 @@ def find_line_ends():
             return '\r\n'
         else:
             return '\n'
-
